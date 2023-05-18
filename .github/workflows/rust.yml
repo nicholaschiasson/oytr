@@ -41,12 +41,12 @@ jobs:
         run: |
           if [[ "${{ github.event.head_commit.message }}" =~ ^Merge\ pull\ request\ #[0-9]+\ from\ [^/]+/patch/.+$ ]]
           then
-            echo ::set-output name=semver::patch
+            echo "semver=patch" >> $GITHUB_OUTPUT
           elif [[ "${{ github.event.head_commit.message }}" =~ ^Merge\ pull\ request\ #[0-9]+\ from\ [^/]+/major/.+$ ]]
           then
-            echo ::set-output name=semver::major
+            echo "semver=major" >> $GITHUB_OUTPUT
           else
-            echo ::set-output name=semver::minor
+            echo "semver=minor" >> $GITHUB_OUTPUT
           fi
       - name: Bump major version and push tag
         id: bump-major
@@ -81,7 +81,7 @@ jobs:
           else
             VERSION=${{ steps.bump-minor.outputs.new_tag }}
           fi
-          echo ::set-output name=version::${VERSION}
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
           sed -i "s/version = \"0.0.0\"/version = \"${VERSION}\"/" Cargo.toml
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v3.1.0
