@@ -1,14 +1,23 @@
 [package]
 name = "oytr"
 version = "0.0.0"
+authors = ["Nicholas Omer Chiasson <nicholasomerchiasson@gmail.com>"]
 edition = "2021"
+license = "MIT"
 description = """
 Oh ya, that's right...
 
 Configure simple reminders on a schedule using cron expressions and get desktop notifications when they are triggered.
 """
+readme = "README.md"
+homepage = "https://github.com/nicholaschiasson/oytr"
+repository = "https://github.com/nicholaschiasson/oytr"
+keywords = ["cli", "reminders"]
+categories = ["command-line-utilities"]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[badges]
+github = { repository = "nicholaschiasson/oytr" }
+maintenance = { status = "passively-maintained" }
 
 [dependencies]
 chrono = "0.4.24"
