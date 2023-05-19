@@ -4,9 +4,10 @@ use std::path::PathBuf;
 use std::str::FromStr;
 use std::{error, process};
 
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Local};
 use clap::{Args, Parser, Subcommand};
 use cron::Schedule;
+use lazy_static::lazy_static;
 use notify_rust::Notification;
 use serde::de::Visitor;
 use serde::{Deserialize, Serialize};
@@ -30,8 +31,8 @@ struct Cli {
     #[command(subcommand)]
     command: Option<OytrCommand>,
     /// Path to config file
-    #[arg(short, long, value_name = "FILE")]
-    config: Option<PathBuf>,
+    #[arg(short, long, value_name = "FILE", default_value = DEFAULT_CONFIGURATION_FILE_PATH.as_str())]
+    config: PathBuf,
 }
 
 struct CronScheduleVisitor;
@@ -122,7 +123,7 @@ struct Reminder {
     schedule: CronSchedule,
     #[arg(skip)]
     #[serde(skip)]
-    upcoming: Option<DateTime<Utc>>,
+    upcoming: Option<DateTime<Local>>,
 }
 
 #[derive(Debug, Default, Deserialize, Serialize)]
@@ -130,21 +131,25 @@ struct Config {
     reminders: Vec<Reminder>,
 }
 
+lazy_static! {
+    static ref DEFAULT_CONFIGURATION_FILE_PATH: String =
+        confy::get_configuration_file_path("oytr", None)
+            .expect("default configuration file path")
+            .display()
+            .to_string();
+}
+
 fn main() -> Result<(), Box<dyn error::Error>> {
     let cli = Cli::parse();
 
-    let config_path = cli
-        .config
-        .unwrap_or(confy::get_configuration_file_path("oytr", None)?);
-
-    let mut cfg: Config = confy::load_path(config_path.clone())?;
+    let mut cfg: Config = confy::load_path(cli.config.clone())?;
 
     match cli.command {
         Some(OytrCommand::Add(reminder)) => {
             println!("Adding reminder:");
             println!("{}", toml::to_string(&reminder)?);
             cfg.reminders.push(reminder);
-            confy::store_path(config_path, cfg)?;
+            confy::store_path(cli.config, cfg)?;
         }
         Some(OytrCommand::List) => {
             println!(
@@ -165,13 +170,13 @@ fn main() -> Result<(), Box<dyn error::Error>> {
         Some(OytrCommand::Remove { id }) => {
             println!("Removing reminder:");
             println!("{}", toml::to_string(&cfg.reminders.remove(id))?);
-            confy::store_path(config_path, cfg)?;
+            confy::store_path(cli.config, cfg)?;
         }
         None => {
             ctrlc::set_handler(|| process::exit(0))?;
             loop {
                 for reminder in cfg.reminders.iter_mut() {
-                    let schedule = (*reminder.schedule).upcoming(Utc).nth(1);
+                    let schedule = (*reminder.schedule).upcoming(Local).nth(1);
                     if reminder.upcoming.is_none() {
                         reminder.upcoming = schedule;
                     } else if reminder.upcoming != schedule {
