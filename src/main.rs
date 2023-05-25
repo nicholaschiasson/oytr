@@ -2,6 +2,7 @@ use std::fmt::Display;
 use std::ops::{Deref, DerefMut};
 use std::path::PathBuf;
 use std::str::FromStr;
+use std::time::Duration;
 use std::{error, process, thread};
 
 use chrono::{DateTime, Local};
