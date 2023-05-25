@@ -2,7 +2,7 @@ use std::fmt::Display;
 use std::ops::{Deref, DerefMut};
 use std::path::PathBuf;
 use std::str::FromStr;
-use std::{error, process};
+use std::{error, process, thread};
 
 use chrono::{DateTime, Local};
 use clap::{Args, Parser, Subcommand};
@@ -191,6 +191,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
                             .show()?;
                     }
                 }
+                thread::sleep(Duration::from_millis(10));
             }
         }
     }
